@@ -3,7 +3,7 @@ var slack = require('slack');
 var fs = require('fs');
 
 var irc_channel = '#pixelbar';
-var slack_token = fs.readFileSync('slack_token.txt');
+var slack_token = fs.readFileSync('slack_token.txt', { encoding: 'utf8' });
 var slack_id = 'U3W134UG7';
 var slack_channel = 'general';
 
@@ -51,7 +51,7 @@ var slack_connecting = false;
 
 slack_client.message(function(msg) {
 	fs.appendFile("slack_messages.txt", new Date() + "\t" + JSON.stringify(msg) + "\n", function(){});
-	if(msg.channel == slack_channel_id && (!msg.bot_id || msg.username == 'spacestate') && msg.text){
+	if(msg.channel == slack_channel_id && (!msg.bot_id || msg.username == 'spacestate' || msg.username == 'Pixelbar MediaWiki') && msg.text){
 		var user_name = slack_data.users.find(u => u.id == msg.user);
 		var message = msg.text.replace(/<@([^>|]+)(|\w+)?>/g, function(token, id, name) {
 			if(name){
