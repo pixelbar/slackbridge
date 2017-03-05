@@ -51,7 +51,7 @@ var slack_connecting = false;
 
 slack_client.message(function(msg) {
 	fs.appendFile("slack_messages.txt", new Date() + "\t" + JSON.stringify(msg) + "\n", function(){});
-	if(msg.channel == slack_channel_id && (!msg.bot_id || msg.username == 'spacestate' || msg.username == 'Pixelbar MediaWiki') && msg.text){
+	if(msg.channel == slack_channel_id && (!msg.bot_id || msg.username == 'spacestate') && msg.text){
 		var user_name = slack_data.users.find(u => u.id == msg.user);
 		var message = msg.text.replace(/<@([^>|]+)(|\w+)?>/g, function(token, id, name) {
 			if(name){
@@ -65,6 +65,13 @@ slack_client.message(function(msg) {
 		sendIRCMessage(user_name ? user_name.name : (msg.user || msg.username), message);
 		onMessage(user_name ? user_name.name : (msg.user || msg.username), message);
 		return;
+	}
+	if(msg.channel == slack_channel_id && msg.bot_id && msg.username == 'Pixelbar MediaWiki'){
+		var message = makeWikiUpdateReadable(msg.text);
+		if(message){
+			sendIRCMessage('Pixelbar MediaWiki', message);
+			return;
+		}
 	}
 	fs.appendFile("ignored_slack_messages.txt", new Date() + "\t" + JSON.stringify(msg) + "\n", function(){});
 });
@@ -84,6 +91,14 @@ startSlack();
 setInterval(startSlack, 1000*60*60);
 
 // other events
+
+function makeWikiUpdateReadable(text){
+	var matches = text.match(/^[^|]+\|(\w+).*title=([^&]+)/);
+	if(matches && matches[1] && matches[2]){
+		return matches[1] + ' has edited wiki page https://wiki.pixelbar.nl/index.php?title=' + encodeURIComponent(matches[2]);
+	}
+	return null;
+}
 
 var foodorder = [];
 function onMessage(name, message) {
