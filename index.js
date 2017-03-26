@@ -49,6 +49,8 @@ var slack_data = {};
 var slack_channel_id = '';
 var slack_connecting = false;
 
+const media_regex = /<([^>]+)>\s+(.*?) is added to the Pixelbar Medialibrary by (.*?) at <https:\/\/media.pixelbar.nl>/gmi;
+
 slack_client.message(function(msg) {
 	fs.appendFile("slack_messages.txt", new Date() + "\t" + JSON.stringify(msg) + "\n", function(){});
 	if(msg.channel == slack_channel_id && (!msg.bot_id || msg.username == 'spacestate') && msg.text){
@@ -65,6 +67,12 @@ slack_client.message(function(msg) {
 		sendIRCMessage(user_name ? user_name.name : (msg.user || msg.username), message);
 		onMessage(user_name ? user_name.name : (msg.user || msg.username), message);
 		return;
+	}
+	if(msg.channel == slack_channel_id && msg.bot_id && msg.username == "Pixelbar Medialist" && !msg.message){
+		var result = media_regex.exec(msg.text);
+		if(result){
+			sendIRCMessage('Pixelbar Medialist', result[3] + " added \"" + result[2] + "\" to the media list: " + result[1]);
+		}
 	}
 	if(msg.channel == slack_channel_id && msg.bot_id && msg.username == 'Pixelbar MediaWiki'){
 		var message = makeWikiUpdateReadable(msg.text);
