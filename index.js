@@ -3,7 +3,7 @@ var slack = require('slack');
 var fs = require('fs');
 
 var irc_channel = '#pixelbar';
-var slack_token = fs.readFileSync('slack_token.txt', { encoding: 'utf8' });
+var slack_token = fs.readFileSync('slack_token.txt', { encoding: 'utf8' }).trim();
 var slack_id = 'U3W134UG7';
 var slack_channel = 'general';
 
