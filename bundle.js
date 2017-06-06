@@ -63,17 +63,23 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = require('fs');
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __webpack_require__(1);
+const fs = __webpack_require__(0);
 class Config {
     constructor() {
         this.irc_channel = "#trangarbot";
@@ -86,20 +92,14 @@ exports.default = new Config();
 
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-module.exports = require('fs');
-
-/***/ }),
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const irc = __webpack_require__(6);
-const config_1 = __webpack_require__(0);
+const irc = __webpack_require__(8);
+const config_1 = __webpack_require__(1);
 class IrcChatClient {
     constructor() {
         this.client = new irc.Client("irc.smurfnet.ch", "pixelbar", {
@@ -137,9 +137,10 @@ exports.default = IrcChatClient;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const slack = __webpack_require__(7);
-const config_1 = __webpack_require__(0);
-const assert = __webpack_require__(5);
+const slack = __webpack_require__(9);
+const config_1 = __webpack_require__(1);
+const assert = __webpack_require__(7);
+const media_regex = /<([^>]+)>\s+(.*?) is added to the Pixelbar Medialibrary by (.*?) at <https:\/\/media.pixelbar.nl>/gmi;
 class SlackChatClient {
     constructor() {
         this.client = slack.rtm.client();
@@ -150,23 +151,72 @@ class SlackChatClient {
             this.slack_channel_id = this.slack_data.channels.find((c) => c.name === config_1.default.slack_channel).id;
         });
         this.client.message((msg) => {
-            __webpack_require__(1).appendFile("slack_messages.json", JSON.stringify(msg) + ",\n", () => { });
-            if (msg.bot_id) {
+            __webpack_require__(0).appendFile("slack_messages.json", JSON.stringify(msg) + ",\n", () => { });
+            if (msg.channel !== this.slack_channel_id || !msg.text) {
                 return;
             }
-            this.messageReceived({
-                message: msg.msg,
-                source: this,
-                time: new Date(),
-                sender: {
-                    display_name: msg.username,
-                    unique_name: "",
-                    is_bot: false
+            if (!msg.bot_id || msg.username === "spacestate") {
+                const user = this.slack_data.users.find((u) => u.id === msg.user);
+                this.messageReceived({
+                    message: this.replace_tokens(msg.text),
+                    source: this,
+                    time: new Date(parseInt(msg.ts, 10) * 1000),
+                    sender: {
+                        display_name: msg.username || user.name,
+                        unique_name: user.id,
+                        is_bot: user.is_bot
+                    }
+                });
+            }
+            else if (msg.username === "Pixelbar Medialist") {
+                const result = media_regex.exec(msg.text);
+                if (result) {
+                    this.messageReceived({
+                        message: result[3] + " added \"" + result[2] + "\" to the media list: " + result[1],
+                        source: this,
+                        time: new Date(parseInt(msg.ts, 10) * 1000),
+                        sender: {
+                            display_name: "Pixelbar Medialist",
+                            unique_name: "Pixelbar Medialist",
+                            is_bot: true
+                        }
+                    });
                 }
-            });
+            }
+            else if (msg.username === "Pixelbar MediaWiki") {
+                var matches = msg.text.match(/^[^|]+\|(\w+).*title=([^&]+)/);
+                if (matches && matches[1] && matches[2]) {
+                    this.messageReceived({
+                        message: matches[1] + " has edited wiki page https://wiki.pixelbar.nl/index.php?title="
+                            + encodeURIComponent(matches[2]),
+                        source: this,
+                        time: new Date(parseInt(msg.ts, 10) * 1000),
+                        sender: {
+                            display_name: "Pixelbar MediaWiki",
+                            unique_name: "Pixelbar MediaWiki",
+                            is_bot: true
+                        }
+                    });
+                }
+            }
         });
         this.connect();
         this.interval = setInterval(this.connect.bind(this), 1000 * 60 * 60);
+    }
+    replace_tokens(message) {
+        console.log("replace tokens", arguments);
+        return message.replace(/<@([^>|]+)(|\w+)?>/g, (token, id, name) => {
+            if (name) {
+                return name.substring(1);
+            }
+            var user = this.slack_data.users.find(u => u.id === id);
+            if (user) {
+                return "@" + user.name;
+            }
+            else {
+                return token;
+            }
+        });
     }
     connect() {
         if (this.slack_connecting) {
@@ -204,38 +254,162 @@ exports.default = SlackChatClient;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const irc_1 = __webpack_require__(2);
-const slack_1 = __webpack_require__(3);
-const interfaces = [
-    new irc_1.default(),
-    new slack_1.default(),
-];
-for (const client of interfaces) {
-    client.messageReceived = messageReceived;
+const fs = __webpack_require__(0);
+class FoodOrder {
+    constructor() {
+        try {
+            this.orders = JSON.parse(fs.readFileSync("data/foodorder.json", { encoding: "utf8" })) || [];
+        }
+        catch (e) {
+            this.orders = [];
+        }
+    }
+    accept(message, manager) {
+        if (!message.message.startsWith("#foodorder")) {
+            return false;
+        }
+        const split = message.message.split(" ", 2);
+        if (split.length === 1 || split[1] === "list") {
+            manager.send(this.getFoodOrders());
+        }
+        else if (split.length > 1 && split[1] === "clear") {
+            manager.send(this.clearFoodOrders());
+        }
+        else {
+            manager.send(this.addFoodOrder(message, split[1]));
+        }
+        return true;
+    }
+    getFoodOrders() {
+        let text;
+        if (this.orders.length > 0) {
+            text = this.orders.map((o) => o.user + " wants " + o.food).join(", ");
+        }
+        else {
+            text = "No orders placed";
+        }
+        return {
+            message: text,
+            time: new Date(),
+            sender: {
+                display_name: "Foodorder",
+                unique_name: "Foodorder",
+                is_bot: true
+            },
+            source: null
+        };
+    }
+    clearFoodOrders() {
+        this.orders = [];
+        this.save();
+        return {
+            message: "Orders cleared",
+            time: new Date(),
+            sender: {
+                display_name: "Foodorder",
+                unique_name: "Foodorder",
+                is_bot: true
+            },
+            source: null
+        };
+    }
+    addFoodOrder(message, food) {
+        this.orders = this.orders.filter((o) => o.user !== message.sender.display_name);
+        this.orders.push({
+            food: food,
+            user: message.sender.display_name
+        });
+        this.save();
+        return {
+            message: message.sender.display_name + " wants " + food,
+            time: new Date(),
+            sender: {
+                display_name: "Foodorder",
+                unique_name: "Foodorder",
+                is_bot: true
+            },
+            source: null
+        };
+    }
+    save() {
+        fs.writeFile("data/foodorder.json", JSON.stringify(this.orders), () => { });
+    }
 }
-function messageReceived(message) {
-    // for (const client of interfaces) {
-    //     if (client !== message.source) {
-    //         client.send(message);
-    //     }
-    // }
-}
+exports.default = FoodOrder;
 
 
 /***/ }),
 /* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class Manager {
+    constructor() {
+        this.chats = [];
+        this.replies = [];
+    }
+    send(message) {
+        for (const chat of this.chats) {
+            if (message.source !== chat) {
+                chat.send(message);
+            }
+        }
+    }
+    messageReceived(message) {
+        for (const reply of this.replies) {
+            if (reply.accept(message, this)) {
+                return;
+            }
+        }
+        this.send(message);
+    }
+    add_chat(chat_interface) {
+        this.chats.push(chat_interface);
+        chat_interface.messageReceived = this.messageReceived.bind(this);
+    }
+}
+exports.default = Manager;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const irc_1 = __webpack_require__(2);
+const slack_1 = __webpack_require__(3);
+const foodorder_1 = __webpack_require__(4);
+const manager_1 = __webpack_require__(5);
+const fs = __webpack_require__(0);
+fs.exists("data", (exists) => {
+    if (!exists) {
+        fs.mkdir("data", () => { });
+    }
+});
+const manager = new manager_1.default();
+manager.add_chat(new irc_1.default());
+manager.add_chat(new slack_1.default());
+manager.replies.push(new foodorder_1.default());
+
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require('assert');
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require('irc');
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = require('slack');

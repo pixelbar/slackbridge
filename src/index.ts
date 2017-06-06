@@ -1,20 +1,18 @@
-import IrcChatClient from "./irc";
-import SlackChatClient from "./slack";
-import { IChatInterface, IMessage } from "./interfaces";
+import IrcChatClient from "./chat_connectors/irc";
+import SlackChatClient from "./chat_connectors/slack";
+import FoodOrder from "./custom_replies/foodorder";
+import Manager from "./manager";
+import * as fs from "fs";
 
-const interfaces: IChatInterface[] = [
-    new IrcChatClient(),
-    new SlackChatClient(),
-];
+fs.exists("data", (exists: boolean) => {
+    if (!exists) {
+        fs.mkdir("data", () => { /* ignored */ });
+    }
+});
 
-for (const client of interfaces) {
-    client.messageReceived = messageReceived;
-}
+const manager: Manager = new Manager();
+manager.add_chat(new IrcChatClient());
+manager.add_chat(new SlackChatClient());
 
-function messageReceived(message: IMessage): void {
-    // for (const client of interfaces) {
-    //     if (client !== message.source) {
-    //         client.send(message);
-    //     }
-    // }
-}
+manager.replies.push(new FoodOrder());
+

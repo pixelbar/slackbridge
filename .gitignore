@@ -2,3 +2,4 @@ slack_token.txt
 *.txt
 node_modules
 .vscode
+data

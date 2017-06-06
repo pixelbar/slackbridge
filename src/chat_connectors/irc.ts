@@ -1,5 +1,5 @@
 import * as irc from "irc";
-import config from "./config";
+import config from "../config";
 import { IChatInterface, IMessage } from "./interfaces";
 
 export default class IrcChatClient implements IChatInterface {
@@ -11,7 +11,7 @@ export default class IrcChatClient implements IChatInterface {
         });
 
         this.client.addListener("message", (from: string, to: string, message: string) => {
-            if(to === config.irc_channel) {
+            if (to === config.irc_channel) {
                 this.messageReceived({
                     source: this,
                     sender: {
@@ -32,6 +32,6 @@ export default class IrcChatClient implements IChatInterface {
 
     messageReceived: (message: IMessage) => void;
     send(message: IMessage): void {
-	    this.client.say(config.irc_channel, "<" + message.sender.display_name + "> " + message.message);
+        this.client.say(config.irc_channel, "<" + message.sender.display_name + "> " + message.message);
     }
 }
