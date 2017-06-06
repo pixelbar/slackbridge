@@ -11,5 +11,10 @@
   "dependencies": {
     "irc": "^0.5.2",
     "slack": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/irc": "^0.3.32",
+    "ts-loader": "^2.1.0",
+    "typescript": "^2.3.4"
   }
 }
