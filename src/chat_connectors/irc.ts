@@ -4,6 +4,12 @@ import { IChatInterface, IMessage } from "./interfaces";
 
 export default class IrcChatClient implements IChatInterface {
     private client: irc.Client;
+    private authed_names: string[] = [
+        "Trangar",
+        "TrangarBot",
+        "miep",
+        "mc.fly"
+    ];
 
     constructor() {
         this.client = new irc.Client("irc.smurfnet.ch", "pixelbar", {
@@ -22,6 +28,13 @@ export default class IrcChatClient implements IChatInterface {
                     message: message,
                     time: new Date(),
                 });
+            }
+        });
+        this.client.addListener("join", (channel: string, nick: string, message: string) => {
+            console.log('join', channel, nick, message);
+            if(channel == config.irc_channel && this.authed_names.indexOf(nick) != -1){
+                console.log('opping!');
+                this.client.send("MODE " + config.irc_channel + " +o " + nick + "\r\n");
             }
         });
 

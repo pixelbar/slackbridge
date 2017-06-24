@@ -19,12 +19,12 @@ export default class Manager {
     }
 
     public messageReceived(message: IMessage): void {
+        this.send(message);
         for(const reply of this.replies){
             if(reply.accept(message, this)) {
                 return;
             }
         }
-        this.send(message);
     }
 
     public add_chat(chat_interface: IChatInterface): void {

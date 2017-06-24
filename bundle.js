@@ -102,6 +102,12 @@ const irc = __webpack_require__(8);
 const config_1 = __webpack_require__(1);
 class IrcChatClient {
     constructor() {
+        this.authed_names = [
+            "Trangar",
+            "TrangarBot",
+            "miep",
+            "mc.fly"
+        ];
         this.client = new irc.Client("irc.smurfnet.ch", "pixelbar", {
             channels: [config_1.default.irc_channel],
         });
@@ -117,6 +123,13 @@ class IrcChatClient {
                     message: message,
                     time: new Date(),
                 });
+            }
+        });
+        this.client.addListener("join", (channel, nick, message) => {
+            console.log('join', channel, nick, message);
+            if (channel == config_1.default.irc_channel && this.authed_names.indexOf(nick) != -1) {
+                console.log('opping!');
+                this.client.send("MODE " + config_1.default.irc_channel + " +o " + nick + "\r\n");
             }
         });
         this.client.addListener("error", (message) => {
@@ -204,7 +217,6 @@ class SlackChatClient {
         this.interval = setInterval(this.connect.bind(this), 1000 * 60 * 60);
     }
     replace_tokens(message) {
-        console.log("replace tokens", arguments);
         return message.replace(/<@([^>|]+)(|\w+)?>/g, (token, id, name) => {
             if (name) {
                 return name.substring(1);
@@ -358,12 +370,12 @@ class Manager {
         }
     }
     messageReceived(message) {
+        this.send(message);
         for (const reply of this.replies) {
             if (reply.accept(message, this)) {
                 return;
             }
         }
-        this.send(message);
     }
     add_chat(chat_interface) {
         this.chats.push(chat_interface);
