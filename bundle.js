@@ -146,10 +146,9 @@ class IrcChatClient {
             }
         });
         this.client.addListener("join", (channel, nick, message) => {
-            console.log('join', channel, nick, message);
             if (channel == config_1.default.irc_channel && this.authed_names.indexOf(nick) != -1) {
-                console.log('opping!');
-                this.client.send("MODE " + config_1.default.irc_channel + " +o " + nick + "\r\n");
+                console.log('opping ' + nick + " - MODE " + config_1.default.irc_channel + " +o " + nick);
+                this.client.send("MODE " + config_1.default.irc_channel + " +o " + nick);
             }
         });
         this.client.addListener("error", (message) => {

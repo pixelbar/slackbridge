@@ -31,10 +31,9 @@ export default class IrcChatClient implements IChatInterface {
             }
         });
         this.client.addListener("join", (channel: string, nick: string, message: string) => {
-            console.log('join', channel, nick, message);
             if(channel == config.irc_channel && this.authed_names.indexOf(nick) != -1){
-                console.log('opping!');
-                this.client.send("MODE " + config.irc_channel + " +o " + nick + "\r\n");
+                console.log('opping ' + nick + " - MODE " + config.irc_channel + " +o " + nick);
+                this.client.send("MODE " + config.irc_channel + " +o " + nick);
             }
         });
 
