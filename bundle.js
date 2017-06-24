@@ -33,9 +33,6 @@
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
 /******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -63,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -98,7 +95,30 @@ exports.default = new Config();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const irc = __webpack_require__(8);
+const irc_1 = __webpack_require__(3);
+const slack_1 = __webpack_require__(5);
+const foodorder_1 = __webpack_require__(8);
+const manager_1 = __webpack_require__(9);
+const fs = __webpack_require__(0);
+fs.exists("data", (exists) => {
+    if (!exists) {
+        fs.mkdir("data", () => { });
+    }
+});
+const manager = new manager_1.default();
+manager.add_chat(new irc_1.default());
+manager.add_chat(new slack_1.default());
+manager.replies.push(new foodorder_1.default());
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const irc = __webpack_require__(4);
 const config_1 = __webpack_require__(1);
 class IrcChatClient {
     constructor() {
@@ -144,13 +164,19 @@ exports.default = IrcChatClient;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = require('irc');
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const slack = __webpack_require__(9);
+const slack = __webpack_require__(6);
 const config_1 = __webpack_require__(1);
 const assert = __webpack_require__(7);
 const media_regex = /<([^>]+)>\s+(.*?) is added to the Pixelbar Medialibrary by (.*?) at <https:\/\/media.pixelbar.nl>/gmi;
@@ -170,16 +196,18 @@ class SlackChatClient {
             }
             if (!msg.bot_id || msg.username === "spacestate") {
                 const user = this.slack_data.users.find((u) => u.id === msg.user);
-                this.messageReceived({
-                    message: this.replace_tokens(msg.text),
-                    source: this,
-                    time: new Date(parseInt(msg.ts, 10) * 1000),
-                    sender: {
-                        display_name: msg.username || user.name,
-                        unique_name: user.id,
-                        is_bot: user.is_bot
-                    }
-                });
+                if (user) {
+                    this.messageReceived({
+                        message: this.replace_tokens(msg.text),
+                        source: this,
+                        time: new Date(parseInt(msg.ts, 10) * 1000),
+                        sender: {
+                            display_name: msg.username || user.name,
+                            unique_name: user.id,
+                            is_bot: user.is_bot
+                        }
+                    });
+                }
             }
             else if (msg.username === "Pixelbar Medialist") {
                 const result = media_regex.exec(msg.text);
@@ -260,7 +288,19 @@ exports.default = SlackChatClient;
 
 
 /***/ }),
-/* 4 */
+/* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require('slack');
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+module.exports = require('assert');
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -351,7 +391,7 @@ exports.default = FoodOrder;
 
 
 /***/ }),
-/* 5 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -384,47 +424,6 @@ class Manager {
 }
 exports.default = Manager;
 
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const irc_1 = __webpack_require__(2);
-const slack_1 = __webpack_require__(3);
-const foodorder_1 = __webpack_require__(4);
-const manager_1 = __webpack_require__(5);
-const fs = __webpack_require__(0);
-fs.exists("data", (exists) => {
-    if (!exists) {
-        fs.mkdir("data", () => { });
-    }
-});
-const manager = new manager_1.default();
-manager.add_chat(new irc_1.default());
-manager.add_chat(new slack_1.default());
-manager.replies.push(new foodorder_1.default());
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-module.exports = require('assert');
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-module.exports = require('irc');
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-module.exports = require('slack');
 
 /***/ })
 /******/ ]);

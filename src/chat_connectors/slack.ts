@@ -29,16 +29,18 @@ export default class SlackChatClient implements IChatInterface {
             }
             if (!msg.bot_id || msg.username === "spacestate") {
                 const user: slack_payload.IUser = this.slack_data.users.find((u: slack_payload.IUser) => u.id === msg.user);
-                this.messageReceived({
-                    message: this.replace_tokens(msg.text),
-                    source: this,
-                    time: new Date(parseInt(msg.ts, 10) * 1000),
-                    sender: {
-                        display_name: msg.username || user.name,
-                        unique_name: user.id,
-                        is_bot: user.is_bot
-                    }
-                });
+                if(user) {
+                    this.messageReceived({
+                        message: this.replace_tokens(msg.text),
+                        source: this,
+                        time: new Date(parseInt(msg.ts, 10) * 1000),
+                        sender: {
+                            display_name: msg.username || user.name,
+                            unique_name: user.id,
+                            is_bot: user.is_bot
+                        }
+                    });
+                }
             } else if (msg.username === "Pixelbar Medialist") {
                 const result: RegExpExecArray = media_regex.exec(msg.text);
                 if (result) {
