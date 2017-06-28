@@ -14,17 +14,16 @@ export default class FoodOrder implements ICustomReply {
     }
 
     public accept(message: IMessage, manager: Manager): boolean {
-        if (!message.message.startsWith("#foodorder")) {
-            return false;
-        }
-
-        const split: string[] = message.message.split(" ", 2);
-        if (split.length === 1 || split[1] === "list") {
+        var index = message.message.indexOf('#foodorder');
+        if(index != 0) return false;
+        var order = message.message.substring('#foodorder'.length).trim();
+        // const split: string[] = message.message.split(" ", 2);
+        if (order === "list" || order === "") {
             manager.send(this.getFoodOrders());
-        } else if (split.length > 1 && split[1] === "clear") {
+        } else if (order === "clear") {
             manager.send(this.clearFoodOrders());
         } else {
-            manager.send(this.addFoodOrder(message, split[1]));
+            manager.send(this.addFoodOrder(message, order));
         }
         return true;
     }

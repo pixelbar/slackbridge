@@ -79,10 +79,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __webpack_require__(0);
 class Config {
     constructor() {
-        this.irc_channel = "#trangarbot";
+        this.irc_channel = "#pixelbar";
         this.slack_token = fs.readFileSync("slack_token.txt", { encoding: "utf8" }).trim();
         this.slack_id = "U3W134UG7";
-        this.slack_channel = "pixelbarbottest";
+        this.slack_channel = "general";
     }
 }
 exports.default = new Config();
@@ -316,18 +316,19 @@ class FoodOrder {
         }
     }
     accept(message, manager) {
-        if (!message.message.startsWith("#foodorder")) {
+        var index = message.message.indexOf('#foodorder');
+        if (index != 0)
             return false;
-        }
-        const split = message.message.split(" ", 2);
-        if (split.length === 1 || split[1] === "list") {
+        var order = message.message.substring('#foodorder'.length).trim();
+        // const split: string[] = message.message.split(" ", 2);
+        if (order === "list" || order === "") {
             manager.send(this.getFoodOrders());
         }
-        else if (split.length > 1 && split[1] === "clear") {
+        else if (order === "clear") {
             manager.send(this.clearFoodOrders());
         }
         else {
-            manager.send(this.addFoodOrder(message, split[1]));
+            manager.send(this.addFoodOrder(message, order));
         }
         return true;
     }
