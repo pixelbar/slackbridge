@@ -13,5 +13,21 @@ There are several values you can set in the [index.js](index.js). These values a
 Clone this repo, make sure you've updated ```slack_token.txt``` and run the following commands
 ```
 npm install
-node index
+node bundle 
 ```
+
+## How to build
+You need to run webpack to compile the typescript files. For more information, see https://www.typescriptlang.org/docs/handbook/react-&-webpack.html
+
+First you need to install typescript and webpack globally
+```
+npm install -g webpack typescript
+npm install
+```
+
+Afterwards you can simply run this in the root directory
+```
+webpack
+```
+
+This should transpile all typescript files into `bundle.js`. After this you can simply run `node bundle` to run the bot.
