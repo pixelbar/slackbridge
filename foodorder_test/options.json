@@ -1,0 +1,170 @@
+[
+  {
+    "name": "Soort brood:",
+    "options": [
+      {
+        "name": "Wit",
+        "price": 0
+      },
+      {
+        "name": "Wit cheese/oregano",
+        "price": 0
+      },
+      {
+        "name": "Bruin honing/tarwe",
+        "price": 0
+      },
+      {
+        "name": "Bruin",
+        "price": 0
+      },
+      {
+        "name": "Sesam",
+        "price": 0
+      },
+      {
+        "name": "Flatbread",
+        "price": 0
+      }
+    ],
+    "type": "select"
+  },
+  {
+    "name": "Kaas:",
+    "options": [
+      {
+        "name": "Zonder kaas ",
+        "price": 0
+      },
+      {
+        "name": "Jonge kaas",
+        "price": 0
+      },
+      {
+        "name": "Cheddar kaas (pittig)",
+        "price": 0
+      }
+    ],
+    "type": "select"
+  },
+  {
+    "name": "Groenten:",
+    "options": [
+      {
+        "name": "Sla",
+        "price": 0
+      },
+      {
+        "name": "Tomaat",
+        "price": 0
+      },
+      {
+        "name": "Komkommer",
+        "price": 0
+      },
+      {
+        "name": "Paprika",
+        "price": 0
+      },
+      {
+        "name": "Augurk",
+        "price": 0
+      },
+      {
+        "name": "Ui",
+        "price": 0
+      },
+      {
+        "name": "Zwarte olijf",
+        "price": 0
+      },
+      {
+        "name": "Pepers",
+        "price": 0
+      }
+    ],
+    "type": "checkbox"
+  },
+  {
+    "name": "Soort saus:",
+    "options": [
+      {
+        "name": "Ketchup",
+        "price": 0
+      },
+      {
+        "name": "Knoflook",
+        "price": 0
+      },
+      {
+        "name": "Geen saus ",
+        "price": 0
+      },
+      {
+        "name": "Chipotle southwest (pittige cocktail) ",
+        "price": 0
+      },
+      {
+        "name": "Sweet onion ",
+        "price": 0
+      },
+      {
+        "name": "Honey mustard ",
+        "price": 0
+      },
+      {
+        "name": "Sweet chilli ",
+        "price": 0
+      },
+      {
+        "name": "Light mayo ",
+        "price": 0
+      },
+      {
+        "name": "BBQ saus ",
+        "price": 0
+      }
+    ],
+    "type": "select"
+  },
+  {
+    "name": "Getoast?:",
+    "options": [
+      {
+        "name": "Niet getoast",
+        "price": 0
+      },
+      {
+        "name": "Wel getoast",
+        "price": 0
+      }
+    ],
+    "type": "select"
+  },
+  {
+    "name": "Extra:",
+    "options": [
+      {
+        "name": "Extra pepperoni (+€ 1,60)",
+        "price": 1.6
+      },
+      {
+        "name": "Extra kaas (+€ 1,00)",
+        "price": 1
+      },
+      {
+        "name": "Dubbel vlees (+€ 1,60)",
+        "price": 1.6
+      },
+      {
+        "name": "Extra kalkoenbacon (+€ 1,60)",
+        "price": 1.6
+      },
+      {
+        "name": "Extra avocado (+€ 1,20)",
+        "price": 1.2
+      }
+    ],
+    "type": "checkbox"
+  }
+]
